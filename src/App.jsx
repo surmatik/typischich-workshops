@@ -5,12 +5,18 @@ import { Query, ID } from 'appwrite';
 
 function WorkshopApp() {
   const { token } = useParams();
+  
+  // States für Daten
   const [workshop, setWorkshop] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // UI States
+  const [showSizeGuide, setShowSizeGuide] = useState(false); // Fix: Fehlender State hinzugefügt
+
+  // Formular States
   const [name, setName] = useState('');
   const [product, setProduct] = useState('T-Shirt');
   const [size, setSize] = useState('');
@@ -28,10 +34,12 @@ function WorkshopApp() {
       setLoading(false);
       setError(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   async function fetchData() {
     try {
+      setLoading(true);
       // 1. Workshop über Token finden
       const workshopRes = await databases.listDocuments(
         DATABASE_ID,
@@ -66,7 +74,6 @@ function WorkshopApp() {
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    // Appwrite Datetime kommt oft als ISO String
     const date = new Date(dateString);
     return date.toLocaleDateString('de-CH');
   };
@@ -82,7 +89,7 @@ function WorkshopApp() {
         product,
         size: product === 'T-Shirt' ? size : '-',
         color: product === 'T-Shirt' ? color : '-',
-        workshops: workshop.$id // Relation setzen
+        workshops: workshop.$id 
       };
 
       const response = await databases.createDocument(
@@ -93,7 +100,10 @@ function WorkshopApp() {
       );
 
       setParticipants([...participants, response]);
-      setName(''); setSize(''); setColor('');
+      // Reset Form
+      setName(''); 
+      setSize(''); 
+      setColor('');
     } catch (err) {
       console.error("Create Error:", err);
       alert("Fehler beim Speichern des Teilnehmers.");
@@ -144,7 +154,7 @@ function WorkshopApp() {
 
         {!isComplete && (
           <section className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
-            <h2 className="text-lg font-bold mb-6">Teilnehmer</h2>
+            <h2 className="text-lg font-bold mb-6">Teilnehmer hinzufügen</h2>
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -191,6 +201,25 @@ function WorkshopApp() {
                 </button>
               </div>
             </div>
+
+            {product === 'T-Shirt' && (
+                <div className="border border-gray-100 rounded-2xl overflow-hidden mt-6">
+                  <button onClick={() => setShowSizeGuide(!showSizeGuide)} className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors text-[10px] font-black uppercase text-gray-500 tracking-widest">
+                    Grössentabelle anzeigen
+                    <span className={`text-lg transition-transform duration-300 ${showSizeGuide ? 'rotate-180' : ''}`}>↓</span>
+                  </button>
+                  {showSizeGuide && (
+                    <div className="p-4 bg-white grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-300">
+                      <div className="space-y-2">
+                         <img src="https://strapi.prod-strapi-fra-01.surmatik.ch/uploads/T_Shirt_Groessenangaben_Frauen_5a6a8414c2.png" alt="Frauen" className="w-full h-auto rounded-lg border border-gray-100" />
+                      </div>
+                      <div className="space-y-2">
+                         <img src="https://strapi.prod-strapi-fra-01.surmatik.ch/uploads/T_Shirt_Groessenangaben_Herren_6a23b8e615.png" alt="Herren" className="w-full h-auto rounded-lg border border-gray-100" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
           </section>
         )}
 
@@ -201,32 +230,34 @@ function WorkshopApp() {
               {participants.length}/{workshop?.persons_count} erfasst
             </div>
           </div>
-          <table className="w-full text-left">
-            <thead>
-              <tr className="text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50">
-                <th className="pb-4">Name</th>
-                <th className="pb-4">Produkt</th>
-                <th className="pb-4 text-right">Details</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {participants.length === 0 ? (
-                <tr><td colSpan="3" className="py-12 text-center text-xs text-gray-300 font-bold uppercase tracking-widest">Noch keine Einträge</td></tr>
-              ) : (
-                participants.map((p) => (
-                  <tr key={p.$id} className="text-sm">
-                    <td className="py-4 font-bold">{p.name}</td>
-                    <td className="py-4 text-gray-500 font-medium">{p.product}</td>
-                    <td className="py-4 text-right">
-                      <span className="text-[10px] font-bold uppercase bg-gray-50 px-2 py-1 rounded text-gray-400 border border-gray-100">
-                        {p.product === 'T-Shirt' ? `${p.color} / ${p.size}` : '-'}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50">
+                  <th className="pb-4">Name</th>
+                  <th className="pb-4">Produkt</th>
+                  <th className="pb-4 text-right">Details</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {participants.length === 0 ? (
+                  <tr><td colSpan="3" className="py-12 text-center text-xs text-gray-300 font-bold uppercase tracking-widest">Noch keine Einträge</td></tr>
+                ) : (
+                  participants.map((p) => (
+                    <tr key={p.$id} className="text-sm">
+                      <td className="py-4 font-bold">{p.name}</td>
+                      <td className="py-4 text-gray-500 font-medium">{p.product}</td>
+                      <td className="py-4 text-right">
+                        <span className="text-[10px] font-bold uppercase bg-gray-50 px-2 py-1 rounded text-gray-400 border border-gray-100">
+                          {p.product === 'T-Shirt' ? `${p.color} / ${p.size}` : '-'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm space-y-8">
@@ -286,7 +317,8 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/:token" element={<WorkshopApp />} />
-        <Route path="*" element={<div className="flex h-screen items-center justify-center text-gray-400">Ungültiger Link.</div>} />
+        <Route path="/" element={<div className="flex h-screen items-center justify-center text-gray-400 font-sans">Bitte Link aus Einladung nutzen.</div>} />
+        <Route path="*" element={<div className="flex h-screen items-center justify-center text-gray-400 font-sans">Seite nicht gefunden.</div>} />
       </Routes>
     </Router>
   );

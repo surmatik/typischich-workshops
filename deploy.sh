@@ -1,18 +1,20 @@
 #!/bin/bash
-set -e  # Script stoppt sofort, wenn ein Fehler auftritt
+set -e
 
-# 1. Lade lokale .env Variablen
 if [ -f .env ]; then
   export $(grep -v '^#' .env | xargs)
 fi
 
 IMAGE_NAME="lino-ionos-ber-app-01:5000/typischich-app-workshops:latest"
 
-echo "🚀 Building image with Supabase Keys..."
-# WICHTIG: Die Variablen müssen hier übergeben werden
+echo "🚀 Building image with Appwrite Config..."
+
 docker build --no-cache \
-  --build-arg VITE_SUPABASE_URL="$VITE_SUPABASE_URL" \
-  --build-arg VITE_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" \
+  --build-arg VITE_APPWRITE_ENDPOINT="$VITE_APPWRITE_ENDPOINT" \
+  --build-arg VITE_APPWRITE_PROJECT_ID="$VITE_APPWRITE_PROJECT_ID" \
+  --build-arg VITE_APPWRITE_DATABASE_ID="$VITE_APPWRITE_DATABASE_ID" \
+  --build-arg VITE_APPWRITE_WORKSHOP_COLLECTION_ID="$VITE_APPWRITE_WORKSHOP_COLLECTION_ID" \
+  --build-arg VITE_APPWRITE_PARTICIPANT_COLLECTION_ID="$VITE_APPWRITE_PARTICIPANT_COLLECTION_ID" \
   -t typischich-app-workshops .
 
 echo "🏷️ Tagging..."
