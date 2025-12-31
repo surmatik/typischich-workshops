@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  workshop-app:
+    image: lino-ionos-ber-app-01:5000/typischich-app-workshops:latest
+    container_name: workshop-app
+    ports:
+      - "3000:80"
+    restart: always
