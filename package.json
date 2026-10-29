@@ -19,7 +19,7 @@
     "@tailwindcss/vite": "^4.1.18",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
+    "postcss": "^8.5.32",
     "tailwindcss": "^4.1.18",
     "vite": "^6.0.1"
   }
